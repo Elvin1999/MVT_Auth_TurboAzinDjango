@@ -2,12 +2,12 @@ from django.shortcuts import render,get_object_or_404,redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
-from .models import Listing,ListingStatus
+from .models import Listing, ListingStatus, STATUS_CHOICES
 from .forms import ListingForm
 
 # Create your views here.
 
-def listings_list(request):
+def listing_list(request):
     qs=Listing.objects.filter(status=ListingStatus.APPROVED)
 
     q=request.GET.get('q') or ''
@@ -37,3 +37,71 @@ def listings_list(request):
     }
 
     return render(request,'listings/listing_list.html',context)
+
+def listing_detail(request,slug):
+    listing=get_object_or_404(Listing,slug=slug)
+    return render(request,'listings/listing_detail.html',{'listing':listing})
+
+@login_required
+def listing_create(request):
+    if request.method=='POST':
+        form = ListingForm(request.POST,request.FILES)
+
+        if form.is_valid():
+            obj=form.save(commit=False)
+            obj.owner=request.user
+
+            obj.save()
+
+            messages.success(request,'Advertisement sent , after admin approve adv will shown')
+            return redirect('my_listings')
+
+    else:
+        form = ListingForm()
+    return render(request,'listings/listing_form.html',{'form':form,'mode':'create'})
+
+@login_required
+def listing_update(request,slug):
+    listing=get_object_or_404(Listing,slug=slug,owner=request.user)
+    if request.method=='POST':
+        form = ListingForm(request.POST,request.FILES,instance=listing)
+        if form.is_valid():
+            form.save()
+            messages.info(request,'Advertisement updated , after admin approve adv will shown')
+            return redirect('my_listings')
+    else:
+        form = ListingForm(instance=listing)
+
+    return render(request,'listings/listing_form.html',{'form':form,'mode':'update'})
+
+@login_required
+def listing_delete(request,slug):
+    listing=get_object_or_404(Listing,slug=slug,owner=request.user)
+    if request.method=='POST':
+        listing.delete()
+        messages.success(request,'Advertisement deleted successfully')
+    return redirect('my_listings')
+
+@login_required
+def my_listings(request):
+    qs=Listing.objects.filter(owner=request.user)
+    status=request.GET.get('status') or ''
+    q=request.GET.get('q') or ''
+    if status in dict(STATUS_CHOICES):
+        qs=qs.filter(status=status)
+    if q:
+        qs=qs.filter(Q(title__icontains=q) | Q(description__icontains=q))
+    return render(request,'listings/my_listings.html',{'listings':qs,'q':q,'status':status})
+
+
+
+
+
+
+
+
+
+
+
+
+

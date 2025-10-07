@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+    <h2>
+    {% if mode == 'create' %} New Advertisement {% else %} Edit Advertisement {% endif %}
+    </h2>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+        {{ form.as_p }}
+
+    <hr/>
+
+    <button type="submit">Save</button>
+
+    </form>
+
+{% endblock %}

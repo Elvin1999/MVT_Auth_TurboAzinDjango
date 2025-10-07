@@ -19,10 +19,10 @@ class ListingAdmin(admin.ModelAdmin):
     @admin.action(description="Approve selected Listings")
     def approve_listings(self, request, queryset):
         updated=queryset.update(status=ListingStatus.APPROVED,published_at=timezone.now())
-        self.message_user(request,f'{updated.title} approved successfully!')
+        self.message_user(request,f'{updated} approved successfully!')
 
     @admin.action(description="Reject selected Listings")
     def reject_listings(self, request, queryset):
         updated=queryset.update(status=ListingStatus.REJECTED)
-        self.message_user(request,f'{updated.title} rejected successfully!')
+        self.message_user(request,f'{updated} rejected successfully!')
 

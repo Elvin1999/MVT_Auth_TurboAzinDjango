@@ -14,7 +14,7 @@ class ListingForm(forms.ModelForm):
             'year',
             'milage',
             'fuel',
-            'gearbox'
+            'gearbox',
             'main_image'
         ]
 

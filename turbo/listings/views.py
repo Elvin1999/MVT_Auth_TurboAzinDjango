@@ -3,7 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
 from .models import Listing, ListingStatus, STATUS_CHOICES
-from .forms import ListingForm
+from .forms import ListingForm, ListingImageFormSet
+
 
 # Create your views here.
 
@@ -46,33 +47,42 @@ def listing_detail(request,slug):
 def listing_create(request):
     if request.method=='POST':
         form = ListingForm(request.POST,request.FILES)
+        formset=ListingImageFormSet(request.POST,request.FILES,instance=Listing())
 
-        if form.is_valid():
+        if form.is_valid() and formset.is_valid():
             obj=form.save(commit=False)
             obj.owner=request.user
 
             obj.save()
+
+            formset.instance=obj
+            formset.save()
 
             messages.success(request,'Advertisement sent , after admin approve adv will shown')
             return redirect('my_listings')
 
     else:
         form = ListingForm()
-    return render(request,'listings/listing_form.html',{'form':form,'mode':'create'})
+        formset=ListingImageFormSet()
+    return render(request,'listings/listing_form.html',{'form':form,'formset':formset,'mode':'create'})
 
 @login_required
 def listing_update(request,slug):
     listing=get_object_or_404(Listing,slug=slug,owner=request.user)
     if request.method=='POST':
         form = ListingForm(request.POST,request.FILES,instance=listing)
-        if form.is_valid():
+        formset=ListingImageFormSet(request.POST,request.FILES,instance=listing)
+
+        if form.is_valid() and formset.is_valid():
             form.save()
+            formset.save()
             messages.info(request,'Advertisement updated , after admin approve adv will shown')
             return redirect('my_listings')
     else:
         form = ListingForm(instance=listing)
+        formset=ListingImageFormSet(instance=listing)
 
-    return render(request,'listings/listing_form.html',{'form':form,'mode':'update'})
+    return render(request,'listings/listing_form.html',{'form':form,'formset':formset,'mode':'update'})
 
 @login_required
 def listing_delete(request,slug):

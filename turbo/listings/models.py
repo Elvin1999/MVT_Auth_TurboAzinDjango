@@ -69,3 +69,15 @@ class Listing(models.Model):
                 self.published_at = None
 
         super().save(*args, **kwargs)
+
+class ListingImage(models.Model):
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name='images')
+    image=models.ImageField(upload_to='listings/extra/', blank=True, null=True)
+    alt=models.CharField(max_length=200,blank=True)
+    order=models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order','id']
+
+    def __str__(self):
+        return f'{self.listing.title} - {self.pk}'

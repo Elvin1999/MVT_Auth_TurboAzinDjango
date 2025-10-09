@@ -16,4 +16,10 @@
         <img style="width:250px;height:200px" src="{{ listing.main_image.url }}" alt="Adv image"/>
     {% endif %}
 
+    {% if listing.images.all %}
+        {% for img in listing.images.all %}
+                <img src="{{ img.image.url }}" alt="{{ img.alt }}" width="200" height="150" />
+        {% endfor %}
+    {% endif %}
+
 {% endblock %}
